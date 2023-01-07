@@ -15,7 +15,7 @@ var (
 )
 
 func main() {
-	fmt.Println("--------------------------- Welcome to shex ---------------------------")
+	fmt.Println("\n\n--------------------------- Welcome to shex ---------------------------")
 	flag.Parse()
 
 	if *targetDomain == "" {
@@ -80,7 +80,7 @@ func main() {
 	// calculate success rate
 	successRate := float64(requestsSucceeded) / float64(requestsSent) * 100
 
-	// calculate failure rate
+	// calculate failure rate in two decimal places
 	failureRate := float64(requestsFailed) / float64(requestsSent) * 100
 
 	fmt.Println("\033[33mRequests sent:", requestsSent, "\033[0m")
