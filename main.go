@@ -72,7 +72,16 @@ func main() {
 	// time elapsed since start of sending requests
 	finished := time.Now()
 	timeUsed := finished.Sub(start)
-	fmt.Printf("\nRequests sent in %v, waiting for responses...\n\n", timeUsed)
+
+	// format time used to send requests
+	if int(timeUsed.Minutes()) > 0 {
+		minutes := int(timeUsed.Minutes())
+		seconds := int(timeUsed.Seconds()) % 60
+		fmt.Printf("\nRequests sent in %d minute(s) and %d seconds, waiting for responses...\n\n", minutes, seconds)
+	} else {
+		fmt.Printf("\nRequests sent in %d seconds, waiting for responses...\n\n", int(timeUsed.Seconds()))
+	}
+
 	wg.Wait()
 
 	// record finishing time
@@ -81,7 +90,14 @@ func main() {
 	// calculate time spent
 	elapsed := end.Sub(start)
 
-	fmt.Println("Load Testing took", elapsed)
+	// format elapsed time
+	if int(elapsed.Minutes()) > 0 {
+		minutes := int(elapsed.Minutes())
+		seconds := int(elapsed.Seconds()) % 60
+		fmt.Printf("\nLoad Testing took %d minute(s) and %d seconds\n", minutes, seconds)
+	} else {
+		fmt.Printf("\nLoad Testing took %d seconds\n", int(elapsed.Seconds()))
+	}
 
 	// calculate metrics
 	metrics(&results)

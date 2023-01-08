@@ -1,6 +1,6 @@
 ## shex
 
-### Load Testing Tool
+### Load Testing CLI
 
 ### Installation
 1. ``` GOOS=darwin GOARCH=amd64 go build -o bin/shex-amd64-darwin main.go ```
