@@ -14,6 +14,22 @@ var (
 	duration = flag.Int("d", 2, "Duration of testing in seconds")
 )
 
+// create struct of color codes
+type colors struct {
+	yellow string
+	green  string
+	red    string
+	reset  string
+}
+
+// assign color codes to color struct
+var color = colors{
+	yellow: "\033[33m",
+	green:  "\033[32m",
+	red:    "\033[31m",
+	reset:  "\033[0m",
+}
+
 func main() {
 	fmt.Println("\n\n--------------------------- Welcome to shex ---------------------------")
 	flag.Parse()
@@ -35,13 +51,13 @@ func main() {
 
 	fmt.Printf("Sending %d requests per second to %s for %d seconds\n", *rps, *url, *duration)
 
-	// Create channel to receive results
+	// create a list of bool for responses, (success/failure)
 	results := make([]bool, 0)
+
+	var wg sync.WaitGroup
 
 	// record starting time
 	start := time.Now()
-
-	var wg sync.WaitGroup
 
 	// loop through the number of seconds
 	for i := 0; i < *duration; i++ {
@@ -52,7 +68,11 @@ func main() {
 		}
 		time.Sleep(time.Second * 1)
 	}
-	fmt.Println("\nRequests sent, waiting for responses...")
+
+	// time elapsed since start of sending requests
+	finished := time.Now()
+	timeUsed := finished.Sub(start)
+	fmt.Printf("\nRequests sent in %v, waiting for responses...\n\n", timeUsed)
 	wg.Wait()
 
 	// record finishing time
@@ -69,7 +89,6 @@ func main() {
 
 func sendRequest(wg *sync.WaitGroup, mutex *sync.Mutex, results *[]bool) {
 	mutex.Lock()
-
 	//start := time.Now()
 	_, err := http.Get(*url)
 	//end := time.Now()
@@ -105,11 +124,11 @@ func metrics(results *[]bool) {
 	// calculate failure rate in two decimal places
 	failureRate := float64(requestsFailed) / float64(requestsSent) * 100
 
-	fmt.Println("\033[33mRequests sent:", requestsSent, "\033[0m")
-	fmt.Println("\033[32mRequests succeeded:", requestsSucceeded, "\033[0m")
-	fmt.Println("\033[31mRequests failed:", requestsFailed, "\033[0m")
-	fmt.Println("\033[32mSuccess rate:", successRate, "%", "\033[0m")
-	fmt.Println("\033[31mFailure rate:", failureRate, "%", "\033[0m")
+	fmt.Println(color.yellow, "Requests sent:", requestsSent, color.reset)
+	fmt.Println(color.green, "Requests succeeded:", requestsSucceeded, color.reset)
+	fmt.Println(color.red, "Requests failed:", requestsFailed, color.reset)
+	fmt.Println(color.green, "Success rate:", successRate, "%", color.reset)
+	fmt.Println(color.red, "Failure rate:", failureRate, "%", color.reset)
 
 	fmt.Println("------------------------- Thanks for using shex -----------------------")
 }
