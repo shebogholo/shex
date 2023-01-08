@@ -63,12 +63,34 @@ func main() {
 
 	fmt.Println("Load Testing took", elapsed)
 
+	// calculate metrics
+	metrics(&results)
+}
+
+func sendRequest(wg *sync.WaitGroup, mutex *sync.Mutex, results *[]bool) {
+	mutex.Lock()
+
+	//start := time.Now()
+	_, err := http.Get(*url)
+	//end := time.Now()
+	mutex.Unlock()
+
+	if err != nil {
+		*results = append(*results, false)
+		wg.Done()
+	} else {
+		*results = append(*results, true)
+		wg.Done()
+	}
+}
+
+func metrics(results *[]bool) {
 	// calculate number of requests sent
 	requestsSent := *rps * *duration
 
 	// calculate number of requests that succeeded
 	requestsSucceeded := 0
-	for _, i := range results {
+	for _, i := range *results {
 		if i {
 			requestsSucceeded++
 		}
@@ -88,26 +110,4 @@ func main() {
 	fmt.Println("\033[31mRequests failed:", requestsFailed, "\033[0m")
 	fmt.Println("\033[32mSuccess rate:", successRate, "%", "\033[0m")
 	fmt.Println("\033[31mFailure rate:", failureRate, "%", "\033[0m")
-
-	fmt.Println("------------------------- Thanks for using shex -----------------------")
-
-}
-
-func sendRequest(wg *sync.WaitGroup, mutex *sync.Mutex, results *[]bool) {
-	mutex.Lock()
-
-	//start := time.Now()
-	_, err := http.Get(*url)
-	//end := time.Now()
-	mutex.Unlock()
-
-	//fmt.Println("Request took", end.Sub(start))
-
-	if err != nil {
-		*results = append(*results, false)
-		wg.Done()
-	} else {
-		*results = append(*results, true)
-		wg.Done()
-	}
 }
