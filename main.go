@@ -129,4 +129,6 @@ func metrics(results *[]bool) {
 	fmt.Println(color.red, "Requests failed:", requestsFailed, color.reset)
 	fmt.Println(color.green, "Success rate:", successRate, "%", color.reset)
 	fmt.Println(color.red, "Failure rate:", failureRate, "%", color.reset)
+
+	fmt.Println("------------------------- Thanks for using shex -----------------------")
 }
