@@ -110,4 +110,6 @@ func metrics(results *[]bool) {
 	fmt.Println("\033[31mRequests failed:", requestsFailed, "\033[0m")
 	fmt.Println("\033[32mSuccess rate:", successRate, "%", "\033[0m")
 	fmt.Println("\033[31mFailure rate:", failureRate, "%", "\033[0m")
+
+	fmt.Println("------------------------- Thanks for using shex -----------------------")
 }
