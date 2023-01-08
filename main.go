@@ -9,21 +9,21 @@ import (
 )
 
 var (
-	targetDomain      = flag.String("u", "", "Target domain url")
-	requestsPerSecond = flag.Int("n", 50, "Number of requests per second")
-	duration          = flag.Int("d", 2, "Duration of the attack in seconds")
+	url      = flag.String("u", "", "Url of target domain")
+	rps      = flag.Int("n", 50, "Number of requests per second")
+	duration = flag.Int("d", 2, "Duration of testing in seconds")
 )
 
 func main() {
 	fmt.Println("\n\n--------------------------- Welcome to shex ---------------------------")
 	flag.Parse()
 
-	if *targetDomain == "" {
+	if *url == "" {
 		fmt.Println("Please provide a target domain")
 		return
 	}
 
-	if *requestsPerSecond < 1 {
+	if *rps < 1 {
 		fmt.Println("Number of requests must be greater than 0")
 		return
 	}
@@ -33,7 +33,7 @@ func main() {
 		return
 	}
 
-	fmt.Printf("Sending %d requests per second to %s for %d seconds\n", *requestsPerSecond, *targetDomain, *duration)
+	fmt.Printf("Sending %d requests per second to %s for %d seconds\n", *rps, *url, *duration)
 
 	// Create channel to receive results
 	results := make([]bool, 0)
@@ -46,13 +46,13 @@ func main() {
 	// loop through the number of seconds
 	for i := 0; i < *duration; i++ {
 		// loop for the number of requests per second
-		for j := 0; j < *requestsPerSecond; j++ {
+		for j := 0; j < *rps; j++ {
 			wg.Add(1)
 			go sendRequest(&wg, &sync.Mutex{}, &results)
 		}
 		time.Sleep(time.Second * 1)
 	}
-	fmt.Println("Requests sent, waiting for responses...")
+	fmt.Println("\nRequests sent, waiting for responses...")
 	wg.Wait()
 
 	// record finishing time
@@ -64,7 +64,7 @@ func main() {
 	fmt.Println("Load Testing took", elapsed)
 
 	// calculate number of requests sent
-	requestsSent := *requestsPerSecond * *duration
+	requestsSent := *rps * *duration
 
 	// calculate number of requests that succeeded
 	requestsSucceeded := 0
@@ -97,7 +97,7 @@ func sendRequest(wg *sync.WaitGroup, mutex *sync.Mutex, results *[]bool) {
 	mutex.Lock()
 
 	//start := time.Now()
-	_, err := http.Get(*targetDomain)
+	_, err := http.Get(*url)
 	//end := time.Now()
 	mutex.Unlock()
 
