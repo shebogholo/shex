@@ -1,8 +1,22 @@
-## shex
+## shex - Load Testing CLI 
 
-### Load Testing CLI
 
-### Installation
-1. ``` GOOS=darwin GOARCH=amd64 go build -o bin/shex-amd64-darwin main.go ```
-2. ``` GOOS=linux GOARCH=amd64 go build -o bin/shex-amd64-linux main.go ```
-3. ``` GOBIN=/usr/local/bin go install ```
+### Go Configuration
+1. Add the following to ``` ~/.bashrc ``` on Ubuntu Machine
+```bash
+    export GOPATH=$HOME/go
+    export GOBIN=$GOPATH/bin
+    export PATH=$PATH:$GOPATH/bin:/usr/local/go/bin
+```
+2. Then on terminal run ``` source ~/.bashrc ```
+
+
+### Build and Install Go package
+1. ``` go build -o bin/shex ```
+2. ``` go install ```
+
+
+### Usage
+1. ``` shex -h ``` for help
+2. ``` shex -u http://shebogholo.com  -n 10 -d 1``` for 10 concurrent requests to localhost:8080 for 1 second
+
