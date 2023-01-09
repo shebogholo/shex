@@ -18,5 +18,5 @@
 
 ### Usage
 1. ``` shex -h ``` for help
-2. ``` shex -u http://shebogholo.com  -n 10 -d 1``` for 10 concurrent requests to localhost:8080 for 1 second
+2. ```shex -u http://shebogholo.com  -n 10 -d 1``` for 10 concurrent requests to http://shebogholo.com for 1 second
 
