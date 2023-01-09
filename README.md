@@ -19,4 +19,3 @@
 ### Usage
 1. ``` shex -h ``` for help
 2. ```shex -u https://shebogholo.com  -n 10 -d 1``` for 10 concurrent requests to https://shebogholo.com for 1 second
-
