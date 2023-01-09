@@ -35,7 +35,7 @@ func main() {
 	flag.Parse()
 
 	if *url == "" {
-		fmt.Println("Please provide a target domain")
+		fmt.Println("Provide a target domain url")
 		return
 	}
 
