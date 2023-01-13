@@ -232,7 +232,6 @@ func saveToCSV(responseItems []responseItem) {
 	// create csv file
 	file, err := os.Create("./results.csv")
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
 	defer file.Close()
