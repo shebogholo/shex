@@ -29,3 +29,8 @@
 1. ``` GOOS=darwin GOARCH=amd64 go build -o bin/shex-amd64-darwin main.go ``` 
 2. ``` GOOS=linux GOARCH=amd64 go build -o bin/shex-amd64-linux main.go ```
 3. ``` GOOS=windows GOARCH=amd64 go build -o bin/shex-amd64-windows.exe main.go ```
+
+### Installation Script for Linux and Mac OS
+```bash
+    sudo curl -sSfL https://raw.githubusercontent.com/shebogholo/shex/main/install.sh | sh
+```
