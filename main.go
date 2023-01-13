@@ -1,9 +1,14 @@
 package main
 
 import (
+	"encoding/csv"
 	"flag"
 	"fmt"
 	"net/http"
+	"net/http/httptrace"
+	"os"
+	"sort"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -30,6 +35,23 @@ var color = colors{
 	reset:  "\033[0m",
 }
 
+type responseItem struct {
+	status      int
+	latency     float64
+	connectTime float64
+}
+
+// transport for http client
+var transport = &http.Transport{
+	MaxIdleConns:        100,
+	MaxIdleConnsPerHost: 100,
+}
+
+var client = &http.Client{
+	Timeout:   time.Second * 90,
+	Transport: transport,
+}
+
 func main() {
 	fmt.Println("\n\n--------------------------- Welcome to shex ---------------------------")
 	flag.Parse()
@@ -54,6 +76,8 @@ func main() {
 	// create a list of bool for responses, (success/failure)
 	results := make([]bool, 0)
 
+	responseItems := make([]responseItem, 0)
+
 	var wg sync.WaitGroup
 
 	// record starting time
@@ -64,7 +88,7 @@ func main() {
 		// loop for the number of requests per second
 		for j := 0; j < *rps; j++ {
 			wg.Add(1)
-			go sendRequest(&wg, &sync.Mutex{}, &results)
+			go sendRequest(&wg, &sync.Mutex{}, &results, &responseItems)
 		}
 		time.Sleep(time.Second * 1)
 	}
@@ -86,7 +110,6 @@ func main() {
 
 	// record finishing time
 	end := time.Now()
-
 	// calculate time spent
 	elapsed := end.Sub(start)
 
@@ -101,20 +124,53 @@ func main() {
 
 	// calculate metrics
 	metrics(&results)
+	advancedMetrics(responseItems)
+	fmt.Println("------------------------- Thanks for using shex -----------------------")
+
 }
 
-func sendRequest(wg *sync.WaitGroup, mutex *sync.Mutex, results *[]bool) {
+func sendRequest(wg *sync.WaitGroup, mutex *sync.Mutex, results *[]bool, responseItems *[]responseItem) {
+	req, err := http.NewRequest(http.MethodGet, *url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	mutex.Lock()
-	//start := time.Now()
-	_, err := http.Get(*url)
-	//end := time.Now()
+	start := time.Now()
+	// define connect time variable
+	var connectTime float64
+
+	// client trace
+	trace := &httptrace.ClientTrace{
+		GotConn: func(info httptrace.GotConnInfo) {
+			connectTime = time.Since(start).Seconds()
+		},
+	}
+
+	clientTraceCtx := httptrace.WithClientTrace(req.Context(), trace)
+	req = req.WithContext(clientTraceCtx)
+	resp, err := client.Do(req)
+
+	//resp, err := http.Get(*url)
+	end := time.Now()
 	mutex.Unlock()
+
+	elapsed := end.Sub(start)
 
 	if err != nil {
 		*results = append(*results, false)
 		wg.Done()
 	} else {
 		*results = append(*results, true)
+
+		// create response item from response
+		respItem := responseItem{resp.StatusCode, elapsed.Seconds(), connectTime}
+
+		// append resp to response items
+		*responseItems = append(*responseItems, respItem)
+
 		wg.Done()
 	}
 }
@@ -145,6 +201,53 @@ func metrics(results *[]bool) {
 	fmt.Println(color.red, "Requests failed:", requestsFailed, color.reset)
 	fmt.Println(color.green, "Success rate:", successRate, "%", color.reset)
 	fmt.Println(color.red, "Failure rate:", failureRate, "%", color.reset)
+}
 
-	fmt.Println("------------------------- Thanks for using shex -----------------------")
+func advancedMetrics(responseItems []responseItem) {
+	numOfResponses := len(responseItems)
+
+	// sort by latency
+	sort.Slice(responseItems, func(i, j int) bool { return responseItems[i].latency < responseItems[j].latency })
+
+	fastest := responseItems[0].latency
+	slowest := responseItems[numOfResponses-1].latency
+
+	fmt.Println(color.green, "Fastest request elapsed time: ", fastest, "seconds", color.reset)
+	fmt.Println(color.red, "Slowest request elapsed time: ", slowest, "seconds", color.reset)
+
+	// sort by connect time
+	sort.Slice(responseItems, func(i, j int) bool { return responseItems[i].connectTime < responseItems[j].connectTime })
+
+	fastestConnect := responseItems[0].connectTime
+	slowestConnect := responseItems[numOfResponses-1].connectTime
+
+	fmt.Println(color.green, "Fastest request connect time: ", fastestConnect, "seconds", color.reset)
+	fmt.Println(color.red, "Slowest request connect time: ", slowestConnect, "seconds", color.reset)
+
+	// save responseItems to csv file
+	saveToCSV(responseItems)
+}
+
+func saveToCSV(responseItems []responseItem) {
+	// create csv file
+	file, err := os.Create("./results.csv")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer file.Close()
+
+	// create csv writer
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	// write headers
+	writer.Write([]string{"Status", "Latency", "Connect"})
+
+	// write data
+	for _, item := range responseItems {
+		writer.Write([]string{strconv.Itoa(item.status), strconv.FormatFloat(item.latency, 'f', 6, 64), strconv.FormatFloat(item.connectTime, 'f', 6, 64)})
+	}
+
+	fmt.Println("Results saved to ./results.csv")
 }
