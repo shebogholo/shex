@@ -15,16 +15,6 @@
 1. ``` go build -o bin/shex ```
 2. ``` go install ```
 
-
-### Install shex
-1. ``` wget https://github.com/shebogholo/shex/releases/download/v0.0.1/shex_0.0.1.deb  -O shex_0.0.1.deb ```
-2. ``` sudo dpkg -i shex_0.0.1.deb ``` 
-
-### Usage
-1. ``` shex -h ``` for help
-2. ```shex -u https://shebogholo.com  -n 10 -d 1``` for 10 concurrent requests to https://shebogholo.com for 1 second
-
-
 ### Compile 
 1. ``` GOOS=darwin GOARCH=amd64 go build -o bin/shex-amd64-darwin main.go ``` 
 2. ``` GOOS=linux GOARCH=amd64 go build -o bin/shex-amd64-linux main.go ```
@@ -34,3 +24,7 @@
 ```bash
     sudo curl -sSfL https://raw.githubusercontent.com/shebogholo/shex/main/install.sh | sh
 ```
+
+### Usage
+1. ``` shex -h ``` for help
+2. ```shex -u https://shebogholo.com  -n 10 -d 1``` for 10 concurrent requests to https://shebogholo.com for 1 second
