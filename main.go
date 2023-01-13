@@ -17,6 +17,7 @@ var (
 	url      = flag.String("u", "", "Url of target domain")
 	rps      = flag.Int("n", 50, "Number of requests per second")
 	duration = flag.Int("d", 2, "Duration of testing in seconds")
+	verbose  = flag.Bool("v", false, "Verbose mode")
 )
 
 // create struct of color codes
@@ -161,12 +162,19 @@ func sendRequest(wg *sync.WaitGroup, mutex *sync.Mutex, results *[]bool, respons
 
 	if err != nil {
 		*results = append(*results, false)
+		if *verbose {
+			fmt.Println(err.Error())
+		}
 		wg.Done()
 	} else {
 		*results = append(*results, true)
 
 		// create response item from response
 		respItem := responseItem{resp.StatusCode, elapsed.Seconds(), connectTime}
+
+		if *verbose {
+			fmt.Printf("Status: %d, Latency: %v, Connect Time: %v\n", resp.StatusCode, strconv.FormatFloat(respItem.latency, 'f', 4, 64), strconv.FormatFloat(respItem.connectTime, 'f', 4, 64))
+		}
 
 		// append resp to response items
 		*responseItems = append(*responseItems, respItem)
@@ -199,8 +207,8 @@ func metrics(results *[]bool) {
 	fmt.Println(color.yellow, "Requests sent:", requestsSent, color.reset)
 	fmt.Println(color.green, "Requests succeeded:", requestsSucceeded, color.reset)
 	fmt.Println(color.red, "Requests failed:", requestsFailed, color.reset)
-	fmt.Println(color.green, "Success rate:", successRate, "%", color.reset)
-	fmt.Println(color.red, "Failure rate:", failureRate, "%", color.reset)
+	fmt.Println(color.green, "Success rate:", strconv.FormatFloat(successRate, 'f', 2, 64), "%", color.reset)
+	fmt.Println(color.red, "Failure rate:", strconv.FormatFloat(failureRate, 'f', 2, 64), "%", color.reset)
 }
 
 func advancedMetrics(responseItems []responseItem) {
@@ -212,8 +220,8 @@ func advancedMetrics(responseItems []responseItem) {
 	fastest := responseItems[0].latency
 	slowest := responseItems[numOfResponses-1].latency
 
-	fmt.Println(color.green, "Fastest request elapsed time: ", fastest, "seconds", color.reset)
-	fmt.Println(color.red, "Slowest request elapsed time: ", slowest, "seconds", color.reset)
+	fmt.Println(color.green, "Fastest request elapsed time:", strconv.FormatFloat(fastest, 'f', 4, 64), "seconds", color.reset)
+	fmt.Println(color.red, "Slowest request elapsed time:", strconv.FormatFloat(slowest, 'f', 4, 64), "seconds", color.reset)
 
 	// sort by connect time
 	sort.Slice(responseItems, func(i, j int) bool { return responseItems[i].connectTime < responseItems[j].connectTime })
@@ -221,8 +229,8 @@ func advancedMetrics(responseItems []responseItem) {
 	fastestConnect := responseItems[0].connectTime
 	slowestConnect := responseItems[numOfResponses-1].connectTime
 
-	fmt.Println(color.green, "Fastest request connect time: ", fastestConnect, "seconds", color.reset)
-	fmt.Println(color.red, "Slowest request connect time: ", slowestConnect, "seconds", color.reset)
+	fmt.Println(color.green, "Fastest request connect time:", strconv.FormatFloat(fastestConnect, 'f', 4, 64), "seconds", color.reset)
+	fmt.Println(color.red, "Slowest request connect time: ", strconv.FormatFloat(slowestConnect, 'f', 4, 64), "seconds", color.reset)
 
 	// save responseItems to csv file
 	saveToCSV(responseItems)

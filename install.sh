@@ -32,8 +32,12 @@ tmp=$(mktemp -d)
 
 binary=$tmp/shex
 
+echo "===> Downloading..."
 $(curl $BINARY_URL -sL -o $binary)
 
+echo "===> Installing..."
 sudo install "$binary" $INSTALL_DIR
 
 rm -rf "$tmp"
+
+echo "Installed successfully!"
