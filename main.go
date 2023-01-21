@@ -89,7 +89,7 @@ func main() {
 		// loop for the number of requests per second
 		for j := 0; j < *rps; j++ {
 			wg.Add(1)
-			go sendRequest(&wg, &sync.Mutex{}, &results, &responseItems)
+			go sendRequest(&wg, &results, &responseItems)
 		}
 		time.Sleep(time.Second * 1)
 	}
@@ -130,7 +130,7 @@ func main() {
 
 }
 
-func sendRequest(wg *sync.WaitGroup, mutex *sync.Mutex, results *[]bool, responseItems *[]responseItem) {
+func sendRequest(wg *sync.WaitGroup, results *[]bool, responseItems *[]responseItem) {
 	req, err := http.NewRequest(http.MethodGet, *url, nil)
 
 	if err != nil {
@@ -138,7 +138,6 @@ func sendRequest(wg *sync.WaitGroup, mutex *sync.Mutex, results *[]bool, respons
 		return
 	}
 
-	mutex.Lock()
 	start := time.Now()
 	// define connect time variable
 	var connectTime float64
@@ -156,7 +155,6 @@ func sendRequest(wg *sync.WaitGroup, mutex *sync.Mutex, results *[]bool, respons
 
 	//resp, err := http.Get(*url)
 	end := time.Now()
-	mutex.Unlock()
 
 	elapsed := end.Sub(start)
 
